@@ -1,20 +1,27 @@
+import axios from 'axios';
 const GITHUB_URL = process.env.REACT_APP_GITHUB_URL;
 const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
+
+const github = axios.create({
+  baseURL: GITHUB_URL,
+  headers: { Authorization: `"token ${GITHUB_TOKEN}"` }
+});
 
 export const searchUsers = async (term) => {
   const params = new URLSearchParams({
     q: term
   });
 
-  const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
-    /// Something error when fetching so i just unactive soon
-    headers: { Authorization: `"token ${GITHUB_TOKEN}"` }
-  });
-  const { items } = await response.json();
-  // setUsers(data);
-  // setLoading(false);
+  /// USING AXIOS
+  const response = await github.get(`/search/users?${params}`);
+  return response.data.items;
 
-  return items;
+  /// USING FETCH
+  // const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+  //   headers: { Authorization: `"token ${GITHUB_TOKEN}"` }
+  // });
+  // const { items } = await response.json();
+  // return items;
 };
 
 export const fetchUser = async (login) => {
@@ -53,3 +60,17 @@ export const getUserRepos = async (login) => {
 //     type: 'CLEAR_USERS'
 //   });
 // };
+
+/// GEt user and repository
+export const getUserAndRepos = async (login) => {
+  //// Making 2 request
+  const [user, repos] = await Promise.all([
+    github.get(`/users/${login}`),
+    github.get(`/users/${login}/repos`)
+  ]);
+
+  return {
+    user: user.data,
+    repos: repos.data
+  };
+};

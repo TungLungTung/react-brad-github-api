@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import Spinner from '../components/shared/Spinner';
 import RepoList from '../components/repos/RepoList';
 import GithubContext from '../context/github/GithubContext';
-import { fetchUser, getUserRepos } from '../context/github/GithubActions';
+import { getUserAndRepos } from '../context/github/GithubActions';
 
 const User = () => {
   const { user, loading, repos, dispatch } = useContext(GithubContext);
@@ -16,17 +16,25 @@ const User = () => {
       type: 'SET_LOADING'
     });
     const getUserData = async () => {
-      const userData = await fetchUser(params.login);
+      /// NEW WAY XIOS
+
+      const userData = await getUserAndRepos(params.login);
       dispatch({
-        type: 'FETCH_USER',
+        type: 'GET_USER_AND_REPOS',
         payload: userData
       });
 
-      const userRepoData = await getUserRepos(params.login);
-      dispatch({
-        type: 'GET_REPOS',
-        payload: userRepoData
-      });
+      /// OLD WAY
+      // const userData = await fetchUser(params.login);
+      // dispatch({
+      //   type: 'FETCH_USER',
+      //   payload: userData
+      // });
+      // const userRepoData = await getUserRepos(params.login);
+      // dispatch({
+      //   type: 'GET_REPOS',
+      //   payload: userRepoData
+      // });
     };
 
     getUserData();
@@ -68,10 +76,6 @@ const User = () => {
               <figure>
                 <img src={avatar_url} alt={login} className="w-full" />
               </figure>
-              <div className="card-body justify-end">
-                <h2 className="card-title mb-0">{name}</h2>
-                <p>{login}</p>
-              </div>
             </div>
           </div>
 

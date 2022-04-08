@@ -17,7 +17,7 @@ const Useritem = ({ user: { login, avatar_url } }) => {
           <h2 className="card-title font-bold">{login}</h2>
           <Link
             className="text-base-content text-opaciry-40 text-md italic"
-            to={`/users/${login}`}
+            to={`/user/${login}`}
           >
             visit profile
           </Link>

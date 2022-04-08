@@ -13,7 +13,9 @@ export const GithubProvider = ({ children }) => {
   /// Reducers
   const initialState = {
     users: [],
-    loading: false
+    loading: false,
+    repos: [],
+    user: {}
   };
 
   /// Use Reducer Hook
@@ -47,7 +49,8 @@ export const GithubProvider = ({ children }) => {
     });
 
     const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` }
+      /// Something error when fetching so i just unactive soon
+      headers: { Authorization: `"token ${GITHUB_TOKEN}"` }
     });
     const { items } = await response.json();
     // setUsers(data);
@@ -57,6 +60,51 @@ export const GithubProvider = ({ children }) => {
     dispatch({
       type: 'GET_USERS_BY_SEARCH',
       payload: items
+    });
+  };
+
+  const fetchUser = async (login) => {
+    setLoading();
+
+    const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+      /// Something error when fetching so i just unactive soon
+      headers: { Authorization: `"token ${GITHUB_TOKEN}"` }
+    });
+
+    if (response.status === 404) {
+      window.location = '/notfound';
+    } else {
+      const data = await response.json();
+      dispatch({
+        type: 'FETCH_USER',
+        payload: data
+      });
+    }
+  };
+
+  const getUserRepos = async (login) => {
+    /// Call set loading
+    setLoading();
+
+    const params = new URLSearchParams({
+      sort: 'created',
+      per_page: 10
+    });
+
+    const response = await fetch(
+      `${GITHUB_URL}/users/${login}/repos?${params}`,
+      {
+        headers: { Authorization: `"token ${GITHUB_TOKEN}"` }
+      }
+    );
+    const data = await response.json();
+    // setUsers(data);
+    // setLoading(false);
+
+    /// Dispatch action type to github Reducers
+    dispatch({
+      type: 'GET_REPOS',
+      payload: data
     });
   };
 
@@ -79,8 +127,12 @@ export const GithubProvider = ({ children }) => {
       value={{
         users: state.users,
         loading: state.loading,
+        user: state.user,
+        repos: state.repos,
         searchUsers,
-        clearUsers
+        clearUsers,
+        fetchUser,
+        getUserRepos
       }}
     >
       {children}
